@@ -9,17 +9,26 @@ var IS_MOBILE = (
 );
 
 var CodeMirrorEditor = React.createClass({
+  propTypes: {
+    lineNumbers: React.PropTypes.bool,
+    onChange: React.PropTypes.func,
+  },
+  getDefaultProps: function() {
+    return {
+      lineNumbers: false,
+    };
+  },
   componentDidMount: function() {
     if (IS_MOBILE) return;
 
-    this.editor = CodeMirror.fromTextArea(this.refs.editor.getDOMNode(), {
+    this.editor = CodeMirror.fromTextArea(ReactDOM.findDOMNode(this.refs.editor), {
       mode: 'javascript',
-      lineNumbers: false,
+      lineNumbers: this.props.lineNumbers,
       lineWrapping: true,
       smartIndent: false,  // javascript mode does bad things with jsx indents
       matchBrackets: true,
       theme: 'solarized-light',
-      readOnly: this.props.readOnly
+      readOnly: this.props.readOnly,
     });
     this.editor.on('change', this.handleChange);
   },
@@ -51,7 +60,7 @@ var CodeMirrorEditor = React.createClass({
         {editor}
       </div>
     );
-  }
+  },
 });
 
 var selfCleaningTimeout = {
@@ -62,7 +71,7 @@ var selfCleaningTimeout = {
   setTimeout: function() {
     clearTimeout(this.timeoutID);
     this.timeoutID = setTimeout.apply(null, arguments);
-  }
+  },
 };
 
 var ReactPlayground = React.createClass({
@@ -75,16 +84,18 @@ var ReactPlayground = React.createClass({
     transformer: React.PropTypes.func,
     renderCode: React.PropTypes.bool,
     showCompiledJSTab: React.PropTypes.bool,
-    editorTabTitle: React.PropTypes.string
+    showLineNumbers: React.PropTypes.bool,
+    editorTabTitle: React.PropTypes.string,
   },
 
   getDefaultProps: function() {
     return {
       transformer: function(code) {
-        return JSXTransformer.transform(code).code;
+        return babel.transform(code).code;
       },
       editorTabTitle: 'Live JSX Editor',
-      showCompiledJSTab: true
+      showCompiledJSTab: true,
+      showLineNumbers: false,
     };
   },
 
@@ -122,6 +133,7 @@ var ReactPlayground = React.createClass({
         onChange={this.handleCodeChange}
         codeText={compiledCode}
         readOnly={true}
+        lineNumbers={this.props.showLineNumbers}
       />;
 
     var JSXContent =
@@ -130,6 +142,7 @@ var ReactPlayground = React.createClass({
         onChange={this.handleCodeChange}
         className="playgroundStage"
         codeText={this.state.code}
+        lineNumbers={this.props.showLineNumbers}
       />;
 
     var JSXTabClassName =
@@ -181,16 +194,16 @@ var ReactPlayground = React.createClass({
   },
 
   executeCode: function() {
-    var mountNode = this.refs.mount.getDOMNode();
+    var mountNode = ReactDOM.findDOMNode(this.refs.mount);
 
     try {
-      React.unmountComponentAtNode(mountNode);
+      ReactDOM.unmountComponentAtNode(mountNode);
     } catch (e) { }
 
     try {
       var compiledCode = this.compileCode();
       if (this.props.renderCode) {
-        React.render(
+        ReactDOM.render(
           <CodeMirrorEditor codeText={compiledCode} readOnly={true} />,
           mountNode
         );
@@ -199,11 +212,11 @@ var ReactPlayground = React.createClass({
       }
     } catch (err) {
       this.setTimeout(function() {
-        React.render(
+        ReactDOM.render(
           <div className="playgroundError">{err.toString()}</div>,
           mountNode
         );
       }, 500);
     }
-  }
+  },
 });

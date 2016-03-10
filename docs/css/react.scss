@@ -7,7 +7,7 @@
 
 @mixin code-typography {
   font-family: 'source-code-pro', Menlo, Consolas, 'Courier New', monospace;
-  font-size: 0.8em;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -76,6 +76,10 @@ li {
   margin-left: 20px;
 }
 
+li + li {
+  margin-top: 10px;
+}
+
 // Make header navigation linkable and on the screen. Used in documentation and
 // blog posts.
 h1, h2, h3, h4, h5, h6 {
@@ -111,25 +115,30 @@ h1, h2, h3, h4, h5, h6 {
     text-decoration: none;
   }
 
-  .nav-site {
+  .nav-site-internal {
+    margin: 0 0 0 20px;
+  }
+
+  .nav-site-external {
     float: right;
     margin: 0;
+  }
 
+  .nav-site {
     li {
       margin: 0;
     }
 
     a {
-      padding: 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      box-sizing: content-box;
+      padding: 0 10px;
       line-height: $navHeight;
       display: inline-block;
       height: $navHeight;
-      color: $mediumTextColor;
+      color: #ddd;
 
       &:hover {
-        color: $lightTextColor;
+        color: #fff;
       }
 
       &.active {
@@ -154,7 +163,8 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   ul {
-    display: inline;
+    display: inline-block;
+    vertical-align: top;
   }
 
   li {
@@ -249,6 +259,22 @@ h1, h2, h3, h4, h5, h6 {
 
     &.active {
       color: $primary;
+    }
+
+    &.external {
+      &:after {
+        content: "";
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        padding-left: 5px;
+        @include retina-image('../img/external', 10px 10px);
+        background-position: 100% 0;
+        background-repeat: no-repeat;
+        font-size: 10px;
+        line-height: 1em;
+        opacity: 0.5;
+      }
     }
   }
 
@@ -380,6 +406,39 @@ h1, h2, h3, h4, h5, h6 {
   @include clearfix;
 }
 
+/* JSX Compiler */
+
+.jsxCompiler {
+  margin: 0 auto;
+  padding-top: 20px;
+  width: 1220px;
+
+  label.compiler-option {
+    display: block;
+    margin-top: 5px;
+  }
+
+  #jsxCompiler {
+    margin-top: 20px;
+  }
+
+  .playgroundPreview {
+    padding: 0;
+    width: 600px;
+    word-wrap: break-word;
+
+    pre {
+      @include code-typography;
+    }
+  }
+
+  .playgroundError {
+    // The compiler view kills padding in order to render the CodeMirror code
+    // more nicely. For the error view, put a padding back
+    padding: 15px 20px;
+  }
+}
+
 .docs-prev {
   float: left;
 }
@@ -416,6 +475,12 @@ section.black content {
     border-left: 5px solid #f7ebc6;
   }
 
+  h2 > code {
+    font-size: inherit;
+    line-height: inherit;
+    color: #555;
+    background-color: rgba(0,0,0,0.04);
+  }
 }
 
 /**
@@ -463,38 +528,6 @@ section.black content {
 .docs-prevnext {
   padding-top: 40px;
   padding-bottom: 40px;
-}
-
-/* JSX Compiler */
-
-.jsxCompiler {
-  margin: 0 auto;
-  padding-top: 20px;
-  width: 1220px;
-
-  label.compiler-option {
-    display: block;
-    margin-top: 5px;
-  }
-
-  #jsxCompiler {
-    margin-top: 20px;
-  }
-
-  .playgroundPreview {
-    padding: 0;
-    width: 600px;
-
-    pre {
-      @include code-typography;
-    }
-  }
-
-  .playgroundError {
-    // The compiler view kills padding in order to render the CodeMirror code
-    // more nicely. For the error view, put a padding back
-    padding: 15px 20px;
-  }
 }
 
 /* Button */
@@ -608,8 +641,8 @@ div.CodeMirror pre, div.CodeMirror-linenumber, code {
   @include code-typography;
 }
 
-div.CodeMirror-linenumber:after {
-  content: '.';
+div.CodeMirror-linenumber {
+  text-align: right;
 }
 
 .CodeMirror, div.CodeMirror-gutters, div.highlight {
@@ -627,6 +660,12 @@ p code {
   color: #555;
   background-color: rgba(0, 0, 0, .04);
   padding: 1px 3px;
+}
+
+small a code,
+li a code,
+p a code {
+  color: inherit;
 }
 
 .cm-s-default span.cm-string-2 {
@@ -684,6 +723,10 @@ p code {
   height: 100px
 }
 
+.MarkdownEditor .content {
+  white-space: pre-wrap;
+}
+
 .hll {
   background-color: #f7ebc6;
   border-left: 5px solid #f7d87c;
@@ -716,6 +759,8 @@ p code {
   margin-bottom: 0;
   background-color: transparent;
   border: 0;
+  float: left;
+  min-width: 100%;
 }
 
 .highlight pre code {
@@ -774,6 +819,10 @@ p code {
   margin-bottom: 30px;
 }
 
+.post img {
+  max-width: 100%;
+}
+
 .pagination {
   margin-bottom: 30px;
 
@@ -789,6 +838,7 @@ p code {
 // Twitter embeds. Need to !important because they inline margin on the iframe.
 div[data-twttr-id] iframe {
   margin: 10px auto !important;
+  width: 100% !important;
 }
 
 /* Acknowledgements */

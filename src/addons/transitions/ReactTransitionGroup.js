@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2014, Facebook, Inc.
+ * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -9,13 +9,12 @@
  * @providesModule ReactTransitionGroup
  */
 
-"use strict";
+'use strict';
 
 var React = require('React');
 var ReactTransitionChildMapping = require('ReactTransitionChildMapping');
 
 var assign = require('Object.assign');
-var cloneWithProps = require('cloneWithProps');
 var emptyFunction = require('emptyFunction');
 
 var ReactTransitionGroup = React.createClass({
@@ -23,19 +22,19 @@ var ReactTransitionGroup = React.createClass({
 
   propTypes: {
     component: React.PropTypes.any,
-    childFactory: React.PropTypes.func
+    childFactory: React.PropTypes.func,
   },
 
   getDefaultProps: function() {
     return {
       component: 'span',
-      childFactory: emptyFunction.thatReturnsArgument
+      childFactory: emptyFunction.thatReturnsArgument,
     };
   },
 
   getInitialState: function() {
     return {
-      children: ReactTransitionChildMapping.getChildMapping(this.props.children)
+      children: ReactTransitionChildMapping.getChildMapping(this.props.children),
     };
   },
 
@@ -64,7 +63,7 @@ var ReactTransitionGroup = React.createClass({
       children: ReactTransitionChildMapping.mergeChildMappings(
         prevChildMapping,
         nextChildMapping
-      )
+      ),
     });
 
     var key;
@@ -193,16 +192,18 @@ var ReactTransitionGroup = React.createClass({
       // This entered again before it fully left. Add it again.
       this.performEnter(key);
     } else {
-      var newChildren = assign({}, this.state.children);
-      delete newChildren[key];
-      this.setState({children: newChildren});
+      this.setState(function(state) {
+        var newChildren = assign({}, state.children);
+        delete newChildren[key];
+        return {children: newChildren};
+      });
     }
   },
 
   render: function() {
     // TODO: we could get rid of the need for the wrapper node
     // by cloning a single child
-    var childrenToRender = {};
+    var childrenToRender = [];
     for (var key in this.state.children) {
       var child = this.state.children[key];
       if (child) {
@@ -211,10 +212,10 @@ var ReactTransitionGroup = React.createClass({
         // already been removed. In case you need this behavior you can provide
         // a childFactory function to wrap every child, even the ones that are
         // leaving.
-        childrenToRender[key] = cloneWithProps(
+        childrenToRender.push(React.cloneElement(
           this.props.childFactory(child),
-          {ref: key}
-        );
+          {ref: key, key: key}
+        ));
       }
     }
     return React.createElement(
@@ -222,7 +223,7 @@ var ReactTransitionGroup = React.createClass({
       this.props,
       childrenToRender
     );
-  }
+  },
 });
 
 module.exports = ReactTransitionGroup;

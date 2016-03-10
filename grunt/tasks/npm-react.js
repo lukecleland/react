@@ -3,19 +3,23 @@
 var fs = require('fs');
 var grunt = require('grunt');
 
-var src = 'npm-react/';
-var dest = 'build/npm-react/';
+var src = 'packages/react/';
+var dest = 'build/packages/react/';
 var modSrc = 'build/modules/';
 var lib = dest + 'lib/';
 var dist = dest + 'dist/';
 var distFiles = [
-  'react.js', 'react.min.js', 'JSXTransformer.js',
-  'react-with-addons.js', 'react-with-addons.min.js'
+  'react.js',
+  'react.min.js',
+  'react-with-addons.js',
+  'react-with-addons.min.js',
 ];
 
 function buildRelease() {
   // delete build/react-core for fresh start
-  grunt.file.exists(dest) && grunt.file.delete(dest);
+  if (grunt.file.exists(dest)) {
+    grunt.file.delete(dest);
+  }
 
   // mkdir -p build/react-core/lib
   grunt.file.mkdir(lib);
@@ -24,15 +28,16 @@ function buildRelease() {
   // and build/modules/**/* to build/react-core/lib
   var mappings = [].concat(
     grunt.file.expandMapping('**/*', dest, {cwd: src}),
-    grunt.file.expandMapping('**/*', lib, {cwd: modSrc})
+    grunt.file.expandMapping('**/*', lib, {cwd: modSrc}),
+    grunt.file.expandMapping('{LICENSE,PATENTS}', dest)
   );
   mappings.forEach(function(mapping) {
-    var src = mapping.src[0];
-    var dest = mapping.dest;
-    if (grunt.file.isDir(src)) {
-      grunt.file.mkdir(dest);
+    var mappingSrc = mapping.src[0];
+    var mappingDest = mapping.dest;
+    if (grunt.file.isDir(mappingSrc)) {
+      grunt.file.mkdir(mappingDest);
     } else {
-      grunt.file.copy(src, dest);
+      grunt.file.copy(mappingSrc, mappingDest);
     }
   });
 
@@ -49,23 +54,22 @@ function buildRelease() {
 }
 
 function packRelease() {
-  /*jshint validthis:true */
   var done = this.async();
   var spawnCmd = {
     cmd: 'npm',
-    args: ['pack', 'npm-react'],
+    args: ['pack', 'packages/react'],
     opts: {
-      cwd: 'build/'
-    }
+      cwd: 'build/',
+    },
   };
   grunt.util.spawn(spawnCmd, function() {
-    var src = 'build/react-' + grunt.config.data.pkg.version + '.tgz';
-    var dest = 'build/react.tgz';
-    fs.rename(src, dest, done);
+    var buildSrc = 'build/react-' + grunt.config.data.pkg.version + '.tgz';
+    var buildDest = 'build/packages/react.tgz';
+    fs.rename(buildSrc, buildDest, done);
   });
 }
 
 module.exports = {
   buildRelease: buildRelease,
-  packRelease: packRelease
+  packRelease: packRelease,
 };
